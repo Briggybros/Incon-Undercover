@@ -26,6 +26,19 @@ if ((_unit getVariable ["INC_undercoverSide",sideEmpty]) isEqualTo _undercoverUn
 
 _unit setVariable ["INC_unitSide",(side _unit)];
 
+_unit addEventHandler["Hit", {
+	params ["_unit", "_source", "_damage"];
+
+	private _crew = crew _source;
+	if (count _crew == 0 || _damage < 5) exitWith {};
+
+	_source setVariable ["INC_naughtyVehicle", true];
+
+	{
+		[_x] call INCON_ucr_fnc_compromised;
+	} forEach _crew;
+}];
+
 //Non-barbaric response to getting killed
 if !(_barbaric) then {
 
@@ -36,6 +49,16 @@ if !(_barbaric) then {
 		[_unit,_killer] spawn {
 
 			params["_unit","_killer"];
+
+			private _crew = crew _killer;
+			// If the unit was killed by a vehicle, then the unit was actually killed by the driver of the vehicle
+			if (count _crew > 0) then {
+				_killer setVariable ["INC_naughtyVehicle", true];
+				_killer = _crew select 0;
+				{
+					[_x] call INCON_ucr_fnc_compromised;
+				} forEach _crew;
+			};
 
 			if (_killer getVariable ["isSneaky",true]) then {
 
@@ -85,6 +108,16 @@ if (_barbaric) then {
 		[_unit,_killer] spawn {
 
 			params["_unit","_killer"];
+
+			private _crew = crew _killer;
+			// If the unit was killed by a vehicle, then the unit was actually killed by the driver of the vehicle
+			if (count _crew > 0) then {
+				_killer setVariable ["INC_naughtyVehicle", true];
+				_killer = _crew select 0;
+				{
+					[_x] call INCON_ucr_fnc_compromised;
+				} forEach _crew;
+			};
 
 			if (_killer getVariable ["isSneaky",true]) then {
 
